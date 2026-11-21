@@ -1,20 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { Shell, ViewId, RoleId } from "@/components/Shell";
+import { useEffect, useState } from "react";
+import { Shell, ViewId } from "@/components/Shell";
 import { Toast } from "@/components/Toast";
 import { HqView } from "@/components/views/HqView";
 import { ZoneView } from "@/components/views/ZoneView";
 import { DivisionView } from "@/components/views/DivisionView";
 import { CompareView } from "@/components/views/CompareView";
 import { MapView } from "@/components/views/MapView";
+import { ReportBuilderView } from "@/components/views/ReportBuilderView";
+import { PermissionsView } from "@/components/views/PermissionsView";
+import { BookmarksMenu, BookmarkState } from "@/components/Bookmarks";
 import { ZONES } from "@/lib/geography";
 import { lastNMonths } from "@/lib/durations";
+import { Role, loadRoles, saveRoles } from "@/lib/roles";
 
 export default function Home() {
   const [view, setView] = useState<ViewId>("hq");
-  const [role, setRole] = useState<RoleId>("hq");
+  const [roles, setRoles] = useState<Role[]>(() => loadRoles());
+  const [roleId, setRoleId] = useState<string>("hq");
   const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    saveRoles(roles);
+  }, [roles]);
 
   const [durationKeys, setDurationKeys] = useState<[number, number]>(lastNMonths(36));
   const [fromKey, toKey] = durationKeys;
@@ -27,6 +36,8 @@ export default function Home() {
   const [compareSelection, setCompareSelection] = useState<string[]>([ZONES[0].id, ZONES[1].id]);
 
   const showToast = (m: string) => setToast(m);
+
+  const roleDef = roles.find((r) => r.id === roleId) ?? roles[0];
 
   function openZone(id: string) {
     setZoneId(id);
@@ -46,13 +57,38 @@ export default function Home() {
     setView("division");
   }
 
+  const bookmarkState: BookmarkState = {
+    view,
+    zoneId,
+    circleId,
+    divisionId,
+    fromKey,
+    toKey,
+    roleId,
+    compareSelection,
+  };
+
+  function restoreBookmark(s: BookmarkState) {
+    setZoneId(s.zoneId);
+    setCircleId(s.circleId);
+    setDivisionId(s.divisionId);
+    setDurationKeys([s.fromKey, s.toKey]);
+    setCompareSelection(s.compareSelection);
+    setRoleId(s.roleId);
+    setView(s.view);
+  }
+
   return (
     <Shell
       view={view}
       setView={setView}
-      role={role}
-      setRole={setRole}
-      onRestricted={() => showToast("That dashboard is restricted under the currently simulated role (RBAC). Switch role in the top bar to preview it.")}
+      roles={roles}
+      roleId={roleId}
+      setRoleId={setRoleId}
+      onRestricted={() =>
+        showToast("That dashboard is restricted under the currently simulated role (RBAC). Switch role in the top bar to preview it.")
+      }
+      bookmarksSlot={<BookmarksMenu current={bookmarkState} onRestore={restoreBookmark} onToast={showToast} />}
     >
       {view === "hq" && (
         <HqView fromKey={fromKey} toKey={toKey} setDuration={setDuration} onToast={showToast} openZone={openZone} />
@@ -99,6 +135,24 @@ export default function Home() {
         />
       )}
       {view === "map" && <MapView fromKey={fromKey} toKey={toKey} setDuration={setDuration} openZone={openZone} />}
+      {view === "reports" && (
+        <ReportBuilderView
+          scope={roleDef.scope}
+          fromKey={fromKey}
+          toKey={toKey}
+          setDuration={setDuration}
+          onToast={showToast}
+        />
+      )}
+      {view === "permissions" && (
+        <PermissionsView
+          roles={roles}
+          setRoles={setRoles}
+          activeRoleId={roleId}
+          setActiveRoleId={setRoleId}
+          onToast={showToast}
+        />
+      )}
 
       {toast && <Toast message={toast} onDone={() => setToast(null)} />}
     </Shell>
