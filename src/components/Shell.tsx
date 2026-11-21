@@ -1,43 +1,45 @@
 "use client";
 
 import { SidebarBrand } from "./Logo";
+import type { Role } from "@/lib/roles";
+import { scopeCoverage, scopeLabel } from "@/lib/roles";
 
-export type ViewId = "hq" | "zone" | "division" | "compare" | "map";
-export type RoleId = "hq" | "zone" | "division";
+export type ViewId = "hq" | "zone" | "division" | "compare" | "map" | "reports" | "permissions";
 
-export const ROLES: { id: RoleId; label: string; initials: string; allowed: ViewId[] }[] = [
-  { id: "hq", label: "HQ Director (NIC-CPWD)", initials: "HQ", allowed: ["hq", "zone", "division", "compare", "map"] },
-  { id: "zone", label: "Zone / Circle Head", initials: "ZC", allowed: ["zone", "division", "compare", "map"] },
-  { id: "division", label: "Division Officer", initials: "DO", allowed: ["division"] },
-];
-
-const NAV: { id: ViewId; label: string; desc: string }[] = [
+export const NAV: { id: ViewId; label: string; desc: string }[] = [
   { id: "hq", label: "HQ Overview", desc: "National roll-up" },
   { id: "zone", label: "Zone & Circle", desc: "Regional drill-down" },
   { id: "division", label: "Division & Officer", desc: "Operational detail" },
   { id: "compare", label: "Comparison Mode", desc: "Multi-location & multi-period" },
   { id: "map", label: "GIS Map View", desc: "Pan-India heatmap" },
+  { id: "reports", label: "Report Builder", desc: "Ad-hoc pivot reports & export" },
+  { id: "permissions", label: "Roles & Permissions", desc: "RBAC matrix, custom roles, data scoping" },
 ];
 
 export function Shell({
   view,
   setView,
-  role,
-  setRole,
+  roles,
+  roleId,
+  setRoleId,
   onRestricted,
+  bookmarksSlot,
   children,
 }: {
   view: ViewId;
   setView: (v: ViewId) => void;
-  role: RoleId;
-  setRole: (r: RoleId) => void;
+  roles: Role[];
+  roleId: string;
+  setRoleId: (r: string) => void;
   onRestricted: () => void;
+  bookmarksSlot?: React.ReactNode;
   children: React.ReactNode;
 }) {
-  const roleDef = ROLES.find((r) => r.id === role)!;
+  const roleDef = roles.find((r) => r.id === roleId) ?? roles[0];
+  const coverage = scopeCoverage(roleDef.scope);
 
   function handleNavClick(id: ViewId) {
-    if (roleDef.allowed.includes(id)) setView(id);
+    if (roleDef.views.includes(id)) setView(id);
     else onRestricted();
   }
 
@@ -47,7 +49,7 @@ export function Shell({
         <SidebarBrand />
         <div className="sidebar-section-label">Dashboards</div>
         {NAV.map((n) => {
-          const allowed = roleDef.allowed.includes(n.id);
+          const allowed = roleDef.views.includes(n.id);
           return (
             <button
               key={n.id}
@@ -94,31 +96,32 @@ export function Shell({
               onChange={(e) => handleNavClick(e.target.value as ViewId)}
             >
               {NAV.map((n) => (
-                <option key={n.id} value={n.id} disabled={!roleDef.allowed.includes(n.id)}>
+                <option key={n.id} value={n.id} disabled={!roleDef.views.includes(n.id)}>
                   {n.label}
                 </option>
               ))}
             </select>
+            {bookmarksSlot}
             <select
               className="select"
-              value={role}
+              value={roleId}
               onChange={(e) => {
-                const r = e.target.value as RoleId;
-                setRole(r);
-                const def = ROLES.find((x) => x.id === r)!;
-                if (!def.allowed.includes(view)) setView(def.allowed[0]);
+                const r = e.target.value;
+                setRoleId(r);
+                const def = roles.find((x) => x.id === r);
+                if (def && !def.views.includes(view)) setView(def.views[0] ?? "hq");
               }}
               title="Switch simulated role to preview RBAC-scoped access"
             >
-              {ROLES.map((r) => (
+              {roles.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.label}
                 </option>
               ))}
             </select>
-            <span className="role-pill">
+            <span className="role-pill" title={`Data scope: ${scopeLabel(roleDef.scope)} — ${coverage.divisionCount} of ${coverage.totalDivisions} divisions (${coverage.pct}%)`}>
               <span className="av">{roleDef.initials}</span>
-              Signed in as {roleDef.label}
+              {scopeLabel(roleDef.scope)} · {coverage.pct}% of India
             </span>
           </div>
         </div>

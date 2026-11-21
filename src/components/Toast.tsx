@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { downloadCSV, toCSV } from "@/lib/analytics";
 
 export function Toast({ message, onDone }: { message: string; onDone: () => void }) {
   useEffect(() => {
@@ -9,15 +10,31 @@ export function Toast({ message, onDone }: { message: string; onDone: () => void
   return <div className="toast">{message}</div>;
 }
 
-export function ExportButton({ what, onToast }: { what: string; onToast: (msg: string) => void }) {
+/** Real CSV export (opens directly in Excel / Google Sheets) for whatever table the calling view currently has on screen. */
+export function ExportButton({
+  filename,
+  headers,
+  rows,
+  onToast,
+}: {
+  filename: string;
+  headers: string[];
+  rows: (string | number)[][];
+  onToast: (msg: string) => void;
+}) {
   return (
     <button
       className="btn btn-sm"
-      onClick={() =>
-        onToast(`Export of ${what} as PDF / Excel is wired to the MIS report engine in production — disabled in this synthetic-data prototype.`)
-      }
+      onClick={() => {
+        if (rows.length === 0) {
+          onToast("Nothing to export yet — adjust the filters above first.");
+          return;
+        }
+        downloadCSV(filename, toCSV(headers, rows));
+        onToast(`Exported ${rows.length.toLocaleString("en-IN")} row${rows.length === 1 ? "" : "s"} as CSV.`);
+      }}
     >
-      ⬇ Export
+      ⬇ Export CSV
     </button>
   );
 }
