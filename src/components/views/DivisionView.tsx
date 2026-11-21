@@ -55,7 +55,12 @@ export function DivisionView({
         <GeographyPicker zoneId={zoneId} circleId={circleId || circle.id} divisionId={divisionId} onChange={onGeoChange} />
         <DurationPicker fromKey={fromKey} toKey={toKey} onChange={setDuration} />
         <div style={{ marginLeft: "auto" }}>
-          <ExportButton what="this division's complaint register" onToast={onToast} />
+          <ExportButton
+            filename={`cpwd-sewa-${divisionId}-complaint-register`}
+            headers={["Ticket ID", "Colony / Station", "Category", "Officer", "Days open", "Status"]}
+            rows={tickets.map((t) => [t.id, t.colony, t.category, t.officer, t.daysOpen, t.status])}
+            onToast={onToast}
+          />
         </div>
       </div>
 

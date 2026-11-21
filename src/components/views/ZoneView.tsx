@@ -50,7 +50,12 @@ export function ZoneView({
         <GeographyPicker zoneId={zoneId} circleId={circleId} divisionId="" onChange={onGeoChange} allowDivision={false} />
         <DurationPicker fromKey={fromKey} toKey={toKey} onChange={setDuration} />
         <div style={{ marginLeft: "auto" }}>
-          <ExportButton what={`the ${circleId ? "circle" : "zone"} MIS summary`} onToast={onToast} />
+          <ExportButton
+            filename={`cpwd-sewa-${circleId || zoneId}-mis-${monthLabel(fromKey).replace(" ", "")}-${monthLabel(toKey).replace(" ", "")}`}
+            headers={["Month", "Received", "Resolved", "SLA / TAT adherence (%)", "Avg. resolution (days)", "Overdue (open)"]}
+            rows={series.map((p) => [p.label, p.received, p.resolved, p.slaMetPct, p.avgResolutionDays, p.overdueOpen])}
+            onToast={onToast}
+          />
         </div>
       </div>
 
@@ -74,7 +79,12 @@ export function ZoneView({
           <div className="card-head">
             <h3>Circle-wise comparison within {zone.name}</h3>
           </div>
-          <CompareBars rows={circleRows.map((r) => ({ name: r.name, value: r.value, color: r.color }))} valueLabel="Complaints received" />
+          <CompareBars
+            rows={circleRows.map((r) => ({ name: r.name, value: r.value, color: r.color, id: r.id }))}
+            valueLabel="Complaints received"
+            onRowClick={(id) => onGeoChange({ zoneId, circleId: id, divisionId: "" })}
+            activeId={circleId || null}
+          />
           <div className="table-wrap" style={{ marginTop: 12 }}>
             <table className="data-table">
               <thead>

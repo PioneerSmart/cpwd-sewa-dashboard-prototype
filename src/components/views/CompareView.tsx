@@ -60,7 +60,15 @@ export function CompareView({
         </div>
         <DurationPicker fromKey={fromKey} toKey={toKey} onChange={setDuration} />
         <div style={{ marginLeft: "auto" }}>
-          <ExportButton what="this comparison" onToast={onToast} />
+          <ExportButton
+            filename={`cpwd-sewa-comparison-${monthLabel(fromKey).replace(" ", "")}-${monthLabel(toKey).replace(" ", "")}`}
+            headers={["Location", "Received", "Resolved", "SLA / TAT adherence (%)", "Avg. resolution (days)", "Overdue (open)"]}
+            rows={series.map((s) => {
+              const sm = summarize(s.points);
+              return [s.name, sm.totalReceived, sm.totalResolved, sm.avgSla, sm.avgResolutionDays, sm.overdueOpen];
+            })}
+            onToast={onToast}
+          />
         </div>
       </div>
 
