@@ -13,6 +13,23 @@ import {
   ReferenceLine,
 } from "recharts";
 import { AggregatedPoint, CATEGORIES } from "@/lib/data";
+import { ForecastPoint } from "@/lib/analytics";
+
+type ChartRow = Record<string, string | number | undefined>;
+
+/** Appends a dashed forecast continuation to a historical series, without duplicating the anchor x-position. */
+function mergeForecast(points: AggregatedPoint[], forecast: ForecastPoint[] | undefined, keys: ("received" | "resolved" | "slaMetPct")[]): ChartRow[] {
+  const base: ChartRow[] = points.map((p) => ({ label: p.label, ...Object.fromEntries(keys.map((k) => [k, p[k]])) }));
+  if (!forecast || forecast.length < 2 || base.length === 0) return base;
+  const anchor = base[base.length - 1];
+  for (const k of keys) anchor[k + "Forecast"] = anchor[k];
+  for (const f of forecast.slice(1)) {
+    const row: ChartRow = { label: f.label };
+    for (const k of keys) row[k + "Forecast"] = f[k];
+    base.push(row);
+  }
+  return base;
+}
 
 const CAT_COLORS: Record<string, string> = {
   civil: "var(--cat-1)",
@@ -40,13 +57,14 @@ function TT({ active, payload, label }: { active?: boolean; payload?: { color?: 
 
 const axisStyle = { fontSize: 11, fill: "var(--text-muted)" };
 
-/** Volume trend: Received vs Resolved, single axis (counts). */
-export function VolumeTrendChart({ points }: { points: AggregatedPoint[] }) {
-  const tickEvery = Math.max(1, Math.floor(points.length / 7));
+/** Volume trend: Received vs Resolved, single axis (counts). Optional dashed forecast continuation. */
+export function VolumeTrendChart({ points, forecast }: { points: AggregatedPoint[]; forecast?: ForecastPoint[] }) {
+  const data = mergeForecast(points, forecast, ["received", "resolved"]);
+  const tickEvery = Math.max(1, Math.floor(data.length / 7));
   return (
     <>
       <ResponsiveContainer width="100%" height={240}>
-        <LineChart data={points} margin={{ top: 6, right: 14, left: 0, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 6, right: 14, left: 0, bottom: 0 }}>
           <CartesianGrid stroke="var(--gridline)" vertical={false} />
           <XAxis
             dataKey="label"
@@ -59,34 +77,46 @@ export function VolumeTrendChart({ points }: { points: AggregatedPoint[] }) {
           <Tooltip content={<TT />} />
           <Line type="monotone" dataKey="received" name="Received" stroke="var(--cat-1)" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="resolved" name="Resolved" stroke="var(--cat-3)" strokeWidth={2} dot={false} />
+          {forecast && (
+            <>
+              <Line type="monotone" dataKey="receivedForecast" name="Received (forecast)" stroke="var(--cat-1)" strokeWidth={2} strokeDasharray="5 4" dot={false} />
+              <Line type="monotone" dataKey="resolvedForecast" name="Resolved (forecast)" stroke="var(--cat-3)" strokeWidth={2} strokeDasharray="5 4" dot={false} />
+            </>
+          )}
         </LineChart>
       </ResponsiveContainer>
       <div className="legend-row">
         <span className="legend-item"><span className="legend-swatch" style={{ background: "var(--cat-1)" }} />Complaints received</span>
         <span className="legend-item"><span className="legend-swatch" style={{ background: "var(--cat-3)" }} />Complaints resolved</span>
+        {forecast && <span className="legend-item"><span className="legend-swatch" style={{ background: "var(--text-muted)" }} />- - - Forecast (linear projection)</span>}
       </div>
     </>
   );
 }
 
-/** SLA / TAT adherence trend, single axis (%), with breach-threshold reference line. */
-export function SlaTrendChart({ points, threshold = 72 }: { points: AggregatedPoint[]; threshold?: number }) {
-  const tickEvery = Math.max(1, Math.floor(points.length / 7));
+/** SLA / TAT adherence trend, single axis (%), with breach-threshold reference line. Optional dashed forecast continuation. */
+export function SlaTrendChart({ points, threshold = 72, forecast }: { points: AggregatedPoint[]; threshold?: number; forecast?: ForecastPoint[] }) {
+  const data = mergeForecast(points, forecast, ["slaMetPct"]);
+  const tickEvery = Math.max(1, Math.floor(data.length / 7));
   return (
     <>
       <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={points} margin={{ top: 6, right: 14, left: 0, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 6, right: 14, left: 0, bottom: 0 }}>
           <CartesianGrid stroke="var(--gridline)" vertical={false} />
           <XAxis dataKey="label" tick={axisStyle} interval={tickEvery} axisLine={{ stroke: "var(--axis)" }} tickLine={false} />
           <YAxis tick={axisStyle} axisLine={false} tickLine={false} width={40} domain={[0, 100]} />
           <Tooltip content={<TT />} />
           <ReferenceLine y={threshold} stroke="var(--status-critical)" strokeDasharray="4 4" />
           <Line type="monotone" dataKey="slaMetPct" name="SLA / TAT adherence (%)" stroke="var(--seq-550)" strokeWidth={2.2} dot={false} />
+          {forecast && (
+            <Line type="monotone" dataKey="slaMetPctForecast" name="SLA / TAT adherence (forecast)" stroke="var(--seq-550)" strokeWidth={2.2} strokeDasharray="5 4" dot={false} />
+          )}
         </LineChart>
       </ResponsiveContainer>
       <div className="legend-row">
         <span className="legend-item"><span className="legend-swatch" style={{ background: "var(--seq-550)" }} />SLA / TAT adherence</span>
         <span className="legend-item"><span className="legend-swatch" style={{ background: "var(--status-critical)" }} />Breach threshold ({threshold}%)</span>
+        {forecast && <span className="legend-item"><span className="legend-swatch" style={{ background: "var(--text-muted)" }} />- - - Forecast (linear projection)</span>}
       </div>
     </>
   );
@@ -121,39 +151,67 @@ export function CategoryBars({ points }: { points: AggregatedPoint[] }) {
   );
 }
 
-/** Horizontal comparison bars across arbitrary named entities (e.g. zones, circles). */
+/** Horizontal comparison bars across arbitrary named entities (e.g. zones, circles). Rows with an `id` can be clickable for cross-filtering. */
 export function CompareBars({
   rows,
   valueLabel,
   format,
+  onRowClick,
+  activeId,
 }: {
-  rows: { name: string; value: number; color: string }[];
+  rows: { name: string; value: number; color: string; id?: string }[];
   valueLabel: string;
   format?: (v: number) => string;
+  onRowClick?: (id: string) => void;
+  activeId?: string | null;
 }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {rows.map((r) => (
-        <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 128, fontSize: 12, color: "var(--text-secondary)", flexShrink: 0, textAlign: "right" }}>{r.name}</div>
-          <div style={{ flex: 1, background: "var(--gridline)", borderRadius: 5, height: 16, position: "relative", overflow: "hidden" }}>
-            <div
-              style={{
-                width: `${Math.max(2, (r.value / max) * 100)}%`,
-                background: r.color,
-                height: "100%",
-                borderRadius: 5,
-              }}
-            />
+      {rows.map((r) => {
+        const clickable = !!(onRowClick && r.id);
+        const isActive = !!(activeId && r.id === activeId);
+        const row = (
+          <>
+            <div style={{ width: 128, fontSize: 12, color: "var(--text-secondary)", flexShrink: 0, textAlign: "right" }}>{r.name}</div>
+            <div style={{ flex: 1, background: "var(--gridline)", borderRadius: 5, height: 16, position: "relative", overflow: "hidden" }}>
+              <div
+                style={{
+                  width: `${Math.max(2, (r.value / max) * 100)}%`,
+                  background: r.color,
+                  height: "100%",
+                  borderRadius: 5,
+                  opacity: activeId && !isActive ? 0.45 : 1,
+                }}
+              />
+            </div>
+            <div style={{ width: 92, fontSize: 12.5, fontWeight: 700, color: "var(--psi-navy)", fontVariantNumeric: "tabular-nums" }}>
+              {format ? format(r.value) : r.value.toLocaleString("en-IN")}
+            </div>
+          </>
+        );
+        if (clickable) {
+          return (
+            <button
+              key={r.name}
+              type="button"
+              className={"compare-bar-row compare-bar-clickable" + (isActive ? " active" : "")}
+              onClick={() => onRowClick!(r.id!)}
+              title={isActive ? "Click to clear cross-filter" : "Click to focus this entity"}
+            >
+              {row}
+            </button>
+          );
+        }
+        return (
+          <div key={r.name} className="compare-bar-row">
+            {row}
           </div>
-          <div style={{ width: 92, fontSize: 12.5, fontWeight: 700, color: "var(--psi-navy)", fontVariantNumeric: "tabular-nums" }}>
-            {format ? format(r.value) : r.value.toLocaleString("en-IN")}
-          </div>
-        </div>
-      ))}
+        );
+      })}
       <div className="legend-row" style={{ marginTop: 0 }}>
         <span className="legend-item">{valueLabel}</span>
+        {onRowClick && <span className="legend-item" style={{ color: "var(--text-muted)" }}>Click a row to cross-filter the dashboard</span>}
       </div>
     </div>
   );
