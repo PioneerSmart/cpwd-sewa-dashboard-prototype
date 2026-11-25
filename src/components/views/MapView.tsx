@@ -60,7 +60,7 @@ export function MapView({
         <div className="card card-pad">
           <div className="card-head">
             <h3>Pan-India zone heatmap — {m.label.toLowerCase()}</h3>
-            <span className="hint">States are grouped into the 6 illustrative CPWD Sewa zones used in this prototype</span>
+            <span className="hint">States are grouped into 6 illustrative zones used in this prototype</span>
           </div>
           <IndiaMap valueByZone={valueByZone} metricLabel={m.label} onSelectZone={openZone} format={m.format} />
         </div>
@@ -98,8 +98,8 @@ export function MapView({
             </table>
           </div>
           <div style={{ marginTop: 12, fontSize: 11, color: "var(--text-muted)" }}>
-            In production, this layer would render at Zone → Circle → Division → Station granularity directly over CPWD
-            Sewa&rsquo;s GPRA colony geocodes via GeoServer / PostGIS.
+            In production, this layer would render at Zone → Circle → Division → Station granularity directly over the
+            department&rsquo;s own colony/site geocodes via GeoServer / PostGIS.
           </div>
         </div>
       </div>

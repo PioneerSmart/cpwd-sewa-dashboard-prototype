@@ -56,7 +56,7 @@ export function DivisionView({
         <DurationPicker fromKey={fromKey} toKey={toKey} onChange={setDuration} />
         <div style={{ marginLeft: "auto" }}>
           <ExportButton
-            filename={`cpwd-sewa-${divisionId}-complaint-register`}
+            filename={`pwd-platform-${divisionId}-complaint-register`}
             headers={["Ticket ID", "Colony / Station", "Category", "Officer", "Days open", "Status"]}
             rows={tickets.map((t) => [t.id, t.colony, t.category, t.officer, t.daysOpen, t.status])}
             onToast={onToast}
@@ -146,7 +146,7 @@ export function DivisionView({
             <thead>
               <tr>
                 <th>Ticket ID</th>
-                <th>GPRA Colony / Station</th>
+                <th>Colony / Site</th>
                 <th>Category</th>
                 <th>Officer</th>
                 <th className="num">Days open</th>

@@ -77,7 +77,7 @@ export function ReportBuilderView({
     const selected = MEASURES.filter((m) => measures.includes(m.id));
     const headers = ["Label", "Zone / Circle", ...selected.map((m) => m.label)];
     const csvRows = sorted.map((r) => [r.label, r.secondary ?? "", ...selected.map((m) => r[m.id])]);
-    downloadCSV(`cpwd-sewa-report-${dimension}-${monthLabel(fromKey).replace(" ", "")}-${monthLabel(toKey).replace(" ", "")}`, toCSV(headers, csvRows));
+    downloadCSV(`pwd-platform-report-${dimension}-${monthLabel(fromKey).replace(" ", "")}-${monthLabel(toKey).replace(" ", "")}`, toCSV(headers, csvRows));
     onToast("Report exported as CSV — opens directly in Excel / Google Sheets.");
   }
 
