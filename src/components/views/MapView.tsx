@@ -56,7 +56,7 @@ export function MapView({
         </div>
       </div>
 
-      <div className="grid-2" style={{ gridTemplateColumns: "1.5fr 1fr" }}>
+      <div className="grid-2">
         <div className="card card-pad">
           <div className="card-head">
             <h3>Pan-India zone heatmap — {m.label.toLowerCase()}</h3>
