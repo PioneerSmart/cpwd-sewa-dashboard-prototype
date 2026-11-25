@@ -17,7 +17,7 @@ export function SidebarBrand() {
       <div className="sidebar-brand-mark">PSI</div>
       <div className="sidebar-brand-text">
         <div className="pname">Pioneer Smart Innovate</div>
-        <div className="ptag">CPWD Sewa · Prototype</div>
+        <div className="ptag">Public Works Intelligence · Prototype</div>
       </div>
     </div>
   );

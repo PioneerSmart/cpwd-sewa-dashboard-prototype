@@ -66,9 +66,9 @@ export function Shell({
           );
         })}
         <div className="sidebar-footer">
-          Prototype build for appraisal purposes.
+          Capability demo build.
           <br />
-          All figures are illustrative synthetic data — not live CPWD Sewa records.
+          All figures are illustrative synthetic data — not live departmental records.
           <br />
           <br />
           © Pioneer Smart Innovate Pvt. Ltd.
@@ -79,15 +79,15 @@ export function Shell({
         <div className="demo-banner">
           <span>🧪</span>
           <span>
-            <b>Prototype / MVP</b> — clickable UI demo with synthetic data, built to showcase the envisaged CPWD Sewa
-            Analytics Dashboard. No live CPWD data or backend is connected.
+            <b>Prototype / MVP</b> — clickable UI demo with synthetic data, built to showcase the envisaged PSI
+            Public Works Intelligence Platform. No live departmental data or backend is connected.
           </span>
         </div>
 
         <div className="topbar">
           <div className="topbar-title">
-            <h1>CPWD Sewa Analytics Dashboard</h1>
-            <span className="sub">Submitted for appraisal to National Informatics Centre (CPWD Division)</span>
+            <h1>PSI Public Works Intelligence Platform</h1>
+            <span className="sub">A Pioneer Smart Innovate capability demo for Public Works Departments</span>
           </div>
           <div className="topbar-right">
             <select
