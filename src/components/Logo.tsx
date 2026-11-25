@@ -14,7 +14,8 @@ export function BrandMark({ size = 36 }: { size?: number }) {
 export function SidebarBrand() {
   return (
     <div className="sidebar-brand">
-      <div className="sidebar-brand-mark">PSI</div>
+      {/* eslint-disable-next-line @next/next/no-img-element -- static export, no image optimizer */}
+      <img src="/brand/psi-logo-mark.png" alt="Pioneer Smart Innovate logo mark" className="sidebar-brand-mark" />
       <div className="sidebar-brand-text">
         <div className="pname">Pioneer Smart Innovate</div>
         <div className="ptag">Public Works Intelligence · Prototype</div>
