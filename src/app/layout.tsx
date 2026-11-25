@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CPWD Sewa Analytics Dashboard — Prototype | Pioneer Smart Innovate",
+  title: "PSI Public Works Intelligence Platform — Prototype | Pioneer Smart Innovate",
   description:
-    "Clickable prototype of the CPWD Sewa Analytics Dashboard, built by Pioneer Smart Innovate Private Limited for appraisal purposes. Illustrative synthetic data.",
+    "Clickable prototype of the PSI Public Works Intelligence Platform, built by Pioneer Smart Innovate Private Limited as a capability demo for Public Works Departments. Illustrative synthetic data.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
