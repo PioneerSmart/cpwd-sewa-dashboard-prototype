@@ -28,7 +28,7 @@ export const ALL_VIEW_IDS: ViewId[] = ["hq", "zone", "division", "compare", "map
 export const DEFAULT_ROLES: Role[] = [
   {
     id: "hq",
-    label: "HQ Director (NIC-CPWD)",
+    label: "HQ Director",
     initials: "HQ",
     builtin: true,
     views: ["hq", "zone", "division", "compare", "map", "reports", "permissions"],
@@ -52,7 +52,7 @@ export const DEFAULT_ROLES: Role[] = [
   },
 ];
 
-const STORAGE_KEY = "cpwd-sewa-demo:roles:v1";
+const STORAGE_KEY = "pwd-platform-demo:roles:v1";
 
 export function loadRoles(): Role[] {
   if (typeof window === "undefined") return DEFAULT_ROLES;

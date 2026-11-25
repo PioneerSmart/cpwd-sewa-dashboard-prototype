@@ -1,7 +1,7 @@
-// Synthetic data engine for the CPWD Sewa Analytics Dashboard demo.
+// Synthetic data engine for the PSI Public Works Intelligence Platform demo.
 // All figures are deterministically generated (seeded PRNG) — illustrative only,
-// not live CPWD Sewa data. The data model mirrors the KPI set described in the
-// techno-commercial proposal: volume, category split, SLA/TAT adherence, overdue backlog.
+// not live departmental data. The data model mirrors a representative KPI set:
+// volume, category split, SLA/TAT adherence, overdue backlog.
 
 import { ALL_DIVISIONS, Division, leafDivisionsUnder } from "./geography";
 

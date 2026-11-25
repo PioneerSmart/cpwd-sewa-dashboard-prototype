@@ -227,7 +227,7 @@ export type Bookmark<T = Record<string, unknown>> = {
   state: T;
 };
 
-const BOOKMARKS_KEY = "cpwd-sewa-demo:bookmarks:v1";
+const BOOKMARKS_KEY = "pwd-platform-demo:bookmarks:v1";
 
 export function loadBookmarks<T = Record<string, unknown>>(): Bookmark<T>[] {
   if (typeof window === "undefined") return [];

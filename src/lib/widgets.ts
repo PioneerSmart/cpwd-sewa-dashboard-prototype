@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 export type WidgetLayout = { order: string[]; hidden: string[] };
 
 function storageKey(viewId: string) {
-  return `cpwd-sewa-demo:widgets:${viewId}:v1`;
+  return `pwd-platform-demo:widgets:${viewId}:v1`;
 }
 
 export function loadWidgetLayout(viewId: string, defaultOrder: string[]): WidgetLayout {

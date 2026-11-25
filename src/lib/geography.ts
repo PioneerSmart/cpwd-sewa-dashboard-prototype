@@ -1,12 +1,12 @@
-// Illustrative CPWD Sewa organisational geography for the demo only.
+// Illustrative Public Works organisational geography for the demo only.
 // Zone -> Circle -> Division hierarchy. All names are representative / generic,
-// not drawn from a live CPWD organisational chart.
+// not drawn from any live departmental organisational chart.
 
 export type Division = {
   id: string;
   name: string;
   seat: string; // representative city/station
-  colonies: string[]; // sample GPRA-type colony names for drill-down
+  colonies: string[]; // sample colony/site names for drill-down
   weight: number; // relative share of circle's complaint volume
 };
 
@@ -42,7 +42,7 @@ export const ZONES: Zone[] = [
         name: "Delhi Circle I",
         divisions: [
           div("nz-c1-d1", "New Delhi Division", "New Delhi", ["Sarojini Nagar Colony", "Netaji Nagar Colony", "Kidwai Nagar (New)"], 1.2),
-          div("nz-c1-d2", "R.K. Puram Division", "R.K. Puram", ["Sector 3 GPRA Colony", "Sector 5 GPRA Colony", "Sector 8 GPRA Colony"], 1.1),
+          div("nz-c1-d2", "R.K. Puram Division", "R.K. Puram", ["Sector 3 Colony", "Sector 5 Colony", "Sector 8 Colony"], 1.1),
           div("nz-c1-d3", "Lodhi Road Division", "Lodhi Road", ["Lodhi Colony", "Bapa Nagar Colony", "Kasturba Nagar Colony"], 1),
         ],
       },
@@ -77,7 +77,7 @@ export const ZONES: Zone[] = [
         id: "wz-c1",
         name: "Mumbai Circle",
         divisions: [
-          div("wz-c1-d1", "Mumbai Division I", "Mumbai", ["Colaba GPRA Colony", "Worli Colony"], 1.05),
+          div("wz-c1-d1", "Mumbai Division I", "Mumbai", ["Colaba Colony", "Worli Colony"], 1.05),
           div("wz-c1-d2", "Mumbai Division II", "Mumbai", ["Bandra Colony", "Antop Hill Colony"], 0.95),
           div("wz-c1-d3", "Pune Division", "Pune", ["Shivajinagar Colony", "Pimpri Colony"], 0.8),
         ],
